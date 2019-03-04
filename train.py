@@ -178,7 +178,7 @@ class Trainer(object):
 def main():
 	parser = argparse.ArgumentParser(description="PyTorch DeeplabV3Plus Training")
 	parser.add_argument('--backbone', type=str, default='resnet',
-											choices=['resnet', 'xception', 'drn', 'mobilenet'],
+											choices=['resnet', 'resnet50', 'xception', 'drn', 'mobilenet'],
 											help='backbone name (default: resnet)')
 	parser.add_argument('--weight_bb', type=str, required=True,
 											help='path to weight of backborn model')

@@ -148,6 +148,14 @@ class ResNet(nn.Module):
 		state_dict.update(model_dict)
 		self.load_state_dict(state_dict)
 
+def ResNet50(output_stride, BatchNorm, pretrained=True):
+	"""Constructs a ResNet-50 model.
+	Args:
+			pretrained (bool): If True, returns a model pre-trained on ImageNet
+	"""
+	model = ResNet(Bottleneck, [3, 4, 6, 3], output_stride, BatchNorm, pretrained=pretrained)
+	return model
+
 def ResNet101(output_stride, BatchNorm, pretrained=True):
 	"""Constructs a ResNet-101 model.
 	Args:

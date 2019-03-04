@@ -7,6 +7,10 @@ def build_backbone(backbone, weight_bb, output_stride, BatchNorm):
 		model._load_pretrained_model(weight_bb)
 		#model.load_state_dict(torch.load(weight_bb))
 		return model
+	elif backbone == 'resnet50':
+		model = resnet.ResNet50(output_stride, BatchNorm)
+		model._load_pretrained_model(weight_bb)
+		return model
 	elif backbone == 'xception':
 		return xception.AlignedXception(output_stride, BatchNorm)
 	elif backbone == 'drn':
