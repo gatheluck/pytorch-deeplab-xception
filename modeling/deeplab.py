@@ -7,7 +7,7 @@ from modeling.decoder import build_decoder
 from modeling.backbone import build_backbone
 
 class DeepLab(nn.Module):
-	def __init__(self, backbone, weight_bb, output_stride=16, num_classes=21,
+	def __init__(self, backbone, bb_weight, output_stride=16, num_classes=21,
 							sync_bn=True, freeze_bn=False):
 		super(DeepLab, self).__init__()
 		if backbone == 'drn':
@@ -18,7 +18,7 @@ class DeepLab(nn.Module):
 		else:
 			BatchNorm = nn.BatchNorm2d
 
-		self.backbone = build_backbone(backbone, weight_bb, output_stride, BatchNorm)
+		self.backbone = build_backbone(backbone, bb_weight, output_stride, BatchNorm)
 		self.aspp = build_aspp(backbone, output_stride, BatchNorm)
 		self.decoder = build_decoder(num_classes, backbone, BatchNorm)
 

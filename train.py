@@ -14,6 +14,8 @@ from utils.saver import Saver
 from utils.summaries import TensorboardSummary
 from utils.metrics import Evaluator
 
+from misc import save_result
+
 class Trainer(object):
 	def __init__(self, args):
 		self.args = args
@@ -32,7 +34,7 @@ class Trainer(object):
 		# Define network
 		model = DeepLab(num_classes=self.nclass,
 										backbone=args.backbone,
-										weight_bb=args.weight_bb,
+										bb_weight=args.bb_weight,
 										output_stride=args.out_stride,
 										sync_bn=args.sync_bn,
 										freeze_bn=args.freeze_bn)
@@ -119,7 +121,7 @@ class Trainer(object):
 		print('Loss: %.3f' % train_loss)
 
 		if self.args.no_val:
-			# save checkpoint every epoch
+			# save checkpoint every epoch (when val is deactivated)
 			is_best = False
 			self.saver.save_checkpoint({
 				'epoch': epoch + 1,
@@ -168,19 +170,30 @@ class Trainer(object):
 		if new_pred > self.best_pred:
 			is_best = True
 			self.best_pred = new_pred
+			# save best model
 			self.saver.save_checkpoint({
 					'epoch': epoch + 1,
 					'state_dict': self.model.module.state_dict(),
 					'optimizer': self.optimizer.state_dict(),
 					'best_pred': self.best_pred,
 			}, is_best)
+			# save best data
+			save_result({
+				'epoch': epoch,
+				'mIoU': mIoU,
+				'frequency weighted IoU': FWIoU,   
+				'loss': test_loss,
+				'Pixel Acc': Acc,
+				'Pixel Acc Class':Acc_class,
+			}, self.args.log_dir, 'best_result.json')
+
 
 def main():
 	parser = argparse.ArgumentParser(description="PyTorch DeeplabV3Plus Training")
-	parser.add_argument('--backbone', type=str, default='resnet',
-											choices=['resnet', 'resnet50', 'xception', 'drn', 'mobilenet'],
-											help='backbone name (default: resnet)')
-	parser.add_argument('--weight_bb', type=str, required=True,
+	parser.add_argument('--backbone', type=str, required=True,
+											choices=['resnet50', 'resnet101', 'xception', 'drn', 'mobilenet'],
+											help='backbone name')
+	parser.add_argument('--bb_weight', type=str, required=True,
 											help='path to weight of backborn model')
 	parser.add_argument('--out-stride', type=int, default=16,
 											help='network output stride (default: 8)')
@@ -197,6 +210,8 @@ def main():
 											help='crop image size')
 	parser.add_argument('--sync-bn', type=bool, default=None,
 											help='whether to use sync bn (default: auto)')
+	parser.add_argument('-l', '--log_dir', type=str, required=True,
+											help='log_dirctory')
 	# this option just makes "SynchronizedBatchNorm2d" and "nn.BatchNorm2d" modules evaluation mode in backborn 
 	parser.add_argument('--freeze-bn', type=bool, default=False,
 											help='whether to freeze bn parameters (default: False)')
