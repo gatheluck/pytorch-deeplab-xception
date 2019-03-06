@@ -13,4 +13,4 @@ source activate deeplab
 cd /home/aaa10329ah/user/waseda/deeplab
 # script
 
-python train.py --backbone resnet50 --bb_weight data/models/resnet50_rge-SIN.pth --epochs 50 -l logs/resnet50_rge-SIN_pascal --batch_size 16
+python train.py --backbone resnet50 --bb_weight data/models/resnet50_rge-SIN.pth --epochs 200 -l logs/resnet50_rge-SIN_pascal --batch_size 16
