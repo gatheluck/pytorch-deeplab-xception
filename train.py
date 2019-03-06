@@ -187,6 +187,23 @@ class Trainer(object):
 				'Pixel Acc Class':Acc_class,
 			}, self.args.log_dir, 'best_result.json')
 
+		# save data
+		self.saver.save_final_checkpoint({
+				'epoch': epoch + 1,
+				'state_dict': self.model.module.state_dict(),
+				'optimizer': self.optimizer.state_dict(),
+				'best_pred': self.best_pred,
+		}, False)
+		# save data
+		save_result({
+			'epoch': epoch,
+			'mIoU': mIoU,
+			'frequency weighted IoU': FWIoU,   
+			'loss': test_loss,
+			'Pixel Acc': Acc,
+			'Pixel Acc Class':Acc_class,
+		}, self.args.log_dir, 'final_result.json')
+
 
 def main():
 	parser = argparse.ArgumentParser(description="PyTorch DeeplabV3Plus Training")
