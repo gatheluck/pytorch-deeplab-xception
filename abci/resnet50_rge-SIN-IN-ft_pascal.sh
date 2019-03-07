@@ -13,4 +13,8 @@ source activate deeplab
 cd /home/aaa10329ah/user/waseda/deeplab
 # script
 
-python train.py --backbone resnet50 --bb_weight data/models/resnet50_rge-SIN-IN-ft.pth --epochs 200 -l logs/resnet50_rge-SIN-IN-ft_pascal --batch_size 16
+python train.py --backbone resnet50 \
+                --bb_weight data/models/resnet50_rge-SIN-IN-ft.pth \
+								--epochs 100 \
+								-l logs/resnet50_rge-SIN-IN-ft_pascal \
+								--batch_size 16
