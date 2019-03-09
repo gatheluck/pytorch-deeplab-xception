@@ -17,4 +17,4 @@ python train.py --backbone resnet101 \
 								--bb_weight data/models/IN_pt_norm_ft_resnet101.pth \
 								--epochs 100 \
 								-l logs/IN_pt_norm_ft_resnet101 \
-								--batch_size 16
+								--batch_size 8
