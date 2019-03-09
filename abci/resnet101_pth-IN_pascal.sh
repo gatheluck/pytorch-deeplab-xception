@@ -15,6 +15,6 @@ cd /home/aaa10329ah/user/waseda/deeplab
 
 python train.py --backbone resnet50 \
                 --bb_weight data/models/resnet101_pth-IN.pth \
-								--epochs 200 \
+								--epochs 100 \
 								-l logs/resnet101_pth-IN_pascal \
 								--batch_size 16
