@@ -1,5 +1,7 @@
 import argparse
 import os
+import os.path
+import sys
 import numpy as np
 from tqdm import tqdm
 
@@ -336,6 +338,8 @@ def main():
 		args.checkname = 'deeplab-'+str(args.backbone)
 
 	# loggers
+	if not os.path.exists(args.logger_dir):
+		os.makedirs(args.logger_dir, exist_ok=True)
 	loggers = {}
 	loggers['loss_train'] = Logger(os.path.join(args.logger_dir,'loss_train.csv'), args.epochs)
 	loggers['loss_val']   = Logger(os.path.join(args.logger_dir,'loss_val.csv'), args.epochs)
@@ -343,6 +347,7 @@ def main():
 	loggers['Acc_val']  = Logger(os.path.join(args.logger_dir,'Acc_val.csv'), args.epochs)
 	loggers['Acc_class_val'] = Logger(os.path.join(args.logger_dir,'Acc_class_val.csv'), args.epochs)
 	loggers['FWIoU_val']  = Logger(os.path.join(args.logger_dir,'FWIoU_val.csv'), args.epochs)
+	args.loggers = loggers
 
 	print(args)
 	torch.manual_seed(args.seed)
