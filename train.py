@@ -15,6 +15,7 @@ from utils.summaries import TensorboardSummary
 from utils.metrics import Evaluator
 
 from misc import save_result
+from logger import Logger
 
 class Trainer(object):
 	def __init__(self, args):
@@ -27,6 +28,9 @@ class Trainer(object):
 		self.summary = TensorboardSummary(self.saver.experiment_dir)
 		self.writer = self.summary.create_summary()
 		
+		# loggers
+		self.loggers = args.loggers
+
 		# Define Dataloader
 		kwargs = {'num_workers': args.workers, 'pin_memory': True}
 		self.train_loader, self.val_loader, self.test_loader, self.nclass = make_data_loader(args, **kwargs)
@@ -116,6 +120,7 @@ class Trainer(object):
 				global_step = i + num_img_tr * epoch
 				self.summary.visualize_image(self.writer, self.args.dataset, image, target, output, global_step)
 
+		self.loggers['loss_train'].set(epoch+1, train_loss) # logger
 		self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 		print('[Epoch: %d, numImages: %5d]' % (epoch, i * self.args.batch_size + image.data.shape[0]))
 		print('Loss: %.3f' % train_loss)
@@ -161,11 +166,17 @@ class Trainer(object):
 		self.writer.add_scalar('val/Acc', Acc, epoch)
 		self.writer.add_scalar('val/Acc_class', Acc_class, epoch)
 		self.writer.add_scalar('val/fwIoU', FWIoU, epoch)
+
 		print('Validation:')
 		print('[Epoch: %d, numImages: %5d]' % (epoch, i * self.args.batch_size + image.data.shape[0]))
 		print("Acc:{}, Acc_class:{}, mIoU:{}, fwIoU: {}".format(Acc, Acc_class, mIoU, FWIoU))
 		print('Loss: %.3f' % test_loss)
-
+		# logger
+		self.loggers['loss_val'].set(epoch+1, test_loss)
+		self.loggers['mIoU_val'].set(epoch+1, mIoU)
+		self.loggers['Acc_val'].set(epoch+1, Acc)
+		self.loggers['Acc_class_val'].set(epoch+1, Acc_class)
+		self.loggers['fwIoU_val'].set(epoch+1, FWIoU)
 		new_pred = mIoU
 		if new_pred > self.best_pred:
 			is_best = True
@@ -229,6 +240,7 @@ def main():
 											help='whether to use sync bn (default: auto)')
 	parser.add_argument('-l', '--log_dir', type=str, required=True,
 											help='log_dirctory')
+	parser.add_argument('--logger_dir', type=str, required=True, help='logger output dir (.csv)')
 	# this option just makes "SynchronizedBatchNorm2d" and "nn.BatchNorm2d" modules evaluation mode in backborn 
 	parser.add_argument('--freeze-bn', type=bool, default=False,
 											help='whether to freeze bn parameters (default: False)')
@@ -322,11 +334,23 @@ def main():
 
 	if args.checkname is None:
 		args.checkname = 'deeplab-'+str(args.backbone)
+
+	# loggers
+	loggers = {}
+	loggers['loss_train'] = Logger(os.path.join(args.logger_dir,'loss_train.csv'), args.epochs)
+	loggers['loss_val']   = Logger(os.path.join(args.logger_dir,'loss_val.csv'), args.epochs)
+	loggers['mIoU_val'] = Logger(os.path.join(args.logger_dir,'mIoU_val.csv'), args.epochs)
+	loggers['Acc_val']  = Logger(os.path.join(args.logger_dir,'Acc_val.csv'), args.epochs)
+	loggers['Acc_class_val'] = Logger(os.path.join(args.logger_dir,'Acc_class_val.csv'), args.epochs)
+	loggers['FWIoU_val']  = Logger(os.path.join(args.logger_dir,'FWIoU_val.csv'), args.epochs)
+
 	print(args)
 	torch.manual_seed(args.seed)
 	trainer = Trainer(args)
 	print('Starting Epoch:', trainer.args.start_epoch)
 	print('Total Epoches:', trainer.args.epochs)
+
+	# training roop
 	for epoch in range(trainer.args.start_epoch, trainer.args.epochs):
 		trainer.training(epoch)
 		if not trainer.args.no_val and epoch % args.eval_interval == (args.eval_interval - 1):
