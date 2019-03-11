@@ -178,7 +178,7 @@ class Trainer(object):
 		self.loggers['mIoU_val'].set(epoch+1, mIoU)
 		self.loggers['Acc_val'].set(epoch+1, Acc)
 		self.loggers['Acc_class_val'].set(epoch+1, Acc_class)
-		self.loggers['fwIoU_val'].set(epoch+1, FWIoU)
+		self.loggers['FWIoU_val'].set(epoch+1, FWIoU)
 		new_pred = mIoU
 		if new_pred > self.best_pred:
 			is_best = True
