@@ -103,6 +103,7 @@ class Trainer(object):
 		self.model.train()
 		tbar = tqdm(self.train_loader)
 		num_img_tr = len(self.train_loader)
+		print("num_img_tr: ", num_img_tr)
 		for i, sample in enumerate(tbar):
 			image, target = sample['image'], sample['label']
 			if self.args.cuda:
@@ -118,9 +119,11 @@ class Trainer(object):
 			self.writer.add_scalar('train/total_loss_iter', loss.item(), i + num_img_tr * epoch)
 
 			# Show 10 * 3 inference results each epoch
-			if i % (num_img_tr // 10) == 0:
-				global_step = i + num_img_tr * epoch
-				self.summary.visualize_image(self.writer, self.args.dataset, image, target, output, global_step)
+			# if i % (num_img_tr // 10) == 0:
+			# 	global_step = i + num_img_tr * epoch
+			# 	self.summary.visualize_image(self.writer, self.args.dataset, image, target, output, global_step)
+
+			# if i % self.print_freq == 0:
 
 		self.loggers['loss_train'].set(epoch+1, train_loss) # logger
 		self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
@@ -143,6 +146,7 @@ class Trainer(object):
 		self.evaluator.reset()
 		tbar = tqdm(self.val_loader, desc='\r')
 		test_loss = 0.0
+		print("val: ", len(self.val_loader))
 		for i, sample in enumerate(tbar):
 			image, target = sample['image'], sample['label']
 			if self.args.cuda:
@@ -232,7 +236,7 @@ def main():
 											help='dataset name (default: pascal)')
 	parser.add_argument('--use-sbd', action='store_true', default=False,
 											help='whether to use SBD dataset (default: False)')
-	parser.add_argument('--workers', type=int, default=4,
+	parser.add_argument('-j','--workers', type=int, default=4,
 											metavar='N', help='dataloader threads')
 	parser.add_argument('--base-size', type=int, default=513,
 											help='base image size')
@@ -240,6 +244,8 @@ def main():
 											help='crop image size')
 	parser.add_argument('--sync-bn', type=bool, default=None,
 											help='whether to use sync bn (default: auto)')
+	parser.add_argument('--print_per_itr', type=int, default=10, 
+	                    help='print times per iteration')										
 	parser.add_argument('-l', '--log_dir', type=str, required=True,
 											help='log_dirctory')
 	parser.add_argument('--logger_dir', type=str, required=True, help='logger output dir (.csv)')
@@ -336,6 +342,17 @@ def main():
 
 	if args.checkname is None:
 		args.checkname = 'deeplab-'+str(args.backbone)
+
+	# 
+	if args.dataset == 'pascal':
+		args.train_size = 10022
+		#args.val_size = 
+	else:
+		raise NotImplementedError 
+
+	args.num_itr = int(args.train_size / args.batch_size)
+	args.print_freq = int(args.num_itr / args.print_per_itr)
+	assert args.print_freq >= 0
 
 	# loggers
 	if not os.path.exists(args.logger_dir):
