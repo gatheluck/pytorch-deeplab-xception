@@ -39,7 +39,7 @@ for model in ${models[@]}; do
 		echo -e "source /etc/profile.d/modules.sh\nmodule load cuda/9.0/9.0.176.4\nexport PATH=\"~/anaconda3/bin:\${PATH}\"\nsource activate ${env_name}\n" >> ${filename}
 
 		echo -e "cd ${projectdir}" >>  ${filename}
-		echo -e "python run_all.py \
+		echo -e "python train.py \
 			--backbone ${model} \
 			-l logs/${name} \
 			--bb_weight data/models/${model}_${train_type}.pth \
