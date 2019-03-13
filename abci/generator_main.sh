@@ -45,6 +45,6 @@ for model in ${models[@]}; do
 			--bb_weight data/models/${model}_${train_type}.pth \
 			--logger_dir logs/${name}/logger_out \
 			--batch_size ${batch_size} \
-			--num_epochs 50" >> ${filename}
+			--epochs 50" >> ${filename}
 	done
 done
