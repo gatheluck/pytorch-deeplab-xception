@@ -29,7 +29,7 @@ for model in ${models[@]}; do
 		if [ ${model} = resnet50 ]; then
 			batch_size=16
 		elif [ ${model} = resnet101 ]; then
-			batch_size=12
+			batch_size=8
 		else
 			echo 'Invalid' 1>&2
 			exit 1
