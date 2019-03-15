@@ -1,13 +1,18 @@
+project=deeplab #name of the projects
+env_name=deeplab
 models=(resnet50 resnet101)
 train_types=(IN IN-FGSM IN-HALF IN-IN FGSM FGSM-IN FGSM-HALF FGSM-FGSM)
-where=aist  #(aist mlab)
+where=mlab  #(aist / mlab)
+suffix=main
 
 if [ ${where} = aist ]; then
+	venv=anaconda3
 	logdir=~/user/waseda/abci_log
 	projectdir=/home/aaa10329ah/user/waseda/deeplab
 	gpu_ids=0,1,2,3
 elif [ ${where} = mlab ]; then
-	logdir=~
+	venv=miniconda3
+	logdir=~/iccv2019/abci_log
 	projectdir=~
 	gpu_ids=0
 else
@@ -15,9 +20,6 @@ else
   exit 1
 fi
 
-project=deeplab #name of the projects
-env_name=deeplab
-suffix=main
 mkdir -p ${project}
 for model in ${models[@]}; do
 	for train_type in ${train_types[@]}; do
@@ -36,7 +38,7 @@ for model in ${models[@]}; do
 		fi
 
 		echo -e "#!/bin/bash\n\n#$ -l rt_F=1\n#$ -l h_rt=24:00:00\n#$ -j y\n#$ -N ${name}\n#$ -o ${logpath}\n\n" > ${filename}
-		echo -e "source /etc/profile.d/modules.sh\nmodule load cuda/9.0/9.0.176.4\nexport PATH=\"~/anaconda3/bin:\${PATH}\"\nsource activate ${env_name}\n" >> ${filename}
+		echo -e "source /etc/profile.d/modules.sh\nmodule load cuda/9.0/9.0.176.4\nexport PATH=\"~/${venv}/bin:\${PATH}\"\nsource activate ${env_name}\n" >> ${filename}
 
 		echo -e "cd ${projectdir}" >>  ${filename}
 		echo -e "python train.py \
